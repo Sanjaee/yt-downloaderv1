@@ -5,13 +5,16 @@ const YoutubeVideo = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoData, setVideoData] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // New state for loading
 
   const handleInputChange = (e) => {
     setVideoUrl(e.target.value);
   };
 
   const handleFetchData = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
+
+    setLoading(true); // Set loading to true when starting the request
 
     const apiEndpoint =
       "https://youtube-mp3-download-highest-quality1.p.rapidapi.com/ytmp3/ytmp3/custom/";
@@ -19,7 +22,7 @@ const YoutubeVideo = () => {
     const options = {
       method: "GET",
       url: apiEndpoint,
-      params: { url: videoUrl, quality: "128" }, // Set quality to 128 by default
+      params: { url: videoUrl, quality: "128" },
       headers: {
         "X-RapidAPI-Key": "7cb05360f8mshca6918f8ea33103p1c4264jsn97b178de78f8",
         "X-RapidAPI-Host":
@@ -35,14 +38,14 @@ const YoutubeVideo = () => {
       console.error(error);
       setError("Error fetching video data");
       setVideoData(null);
+    } finally {
+      setLoading(false); // Set loading to false when the request is completed (success or error)
     }
   };
 
   const handleDownload = () => {
     if (videoData && videoData.links && videoData.links.length > 0) {
-      const highestQualityLink = videoData.links[0].url; // Assuming the array is sorted by quality
-
-      // Open the link in a new tab/window
+      const highestQualityLink = videoData.links[0].url;
       window.open(highestQualityLink, "_blank");
     }
   };
@@ -65,26 +68,26 @@ const YoutubeVideo = () => {
           Generate
         </button>
 
+        {loading && <p className="loading-message">Loading...</p>}
+
         {error && <p className="error-message">{error}</p>}
 
         {videoData && (
           <div className="result-container">
-            <h2>Result</h2>
+            <h2>Hasil</h2>
             <p>Title: {videoData.title}</p>
-            {/* Display the link as a clickable anchor */}
             <p>
-              Link:{" "}
               <a
                 href={videoData.link}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="download-button"
               >
                 Download
               </a>
             </p>
             <p>Length: {videoData.length}</p>
             <p>Size: {videoData.size}</p>
-            {/* Remove the separate "Download" button */}
           </div>
         )}
       </form>
