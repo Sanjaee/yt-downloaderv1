@@ -2,37 +2,28 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const YoutubeVideo = () => {
-  const [videoId, setVideoId] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [videoData, setVideoData] = useState(null);
   const [error, setError] = useState(null);
 
-  const extractVideoId = (url) => {
-    const regex =
-      /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-
-    return match ? match[1] : null;
-  };
-
   const handleInputChange = (e) => {
-    const inputUrl = e.target.value;
-    const extractedVideoId = extractVideoId(inputUrl);
-
-    if (extractedVideoId) {
-      setVideoId(extractedVideoId);
-    } else {
-      setVideoId("");
-    }
+    setVideoUrl(e.target.value);
   };
 
-  const handleFetchData = async () => {
+  const handleFetchData = async (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+
+    const apiEndpoint =
+      "https://youtube-mp3-download-highest-quality1.p.rapidapi.com/ytmp3/ytmp3/custom/";
+
     const options = {
       method: "GET",
-      url: "https://youtube-mp36.p.rapidapi.com/dl",
-      params: { id: videoId },
+      url: apiEndpoint,
+      params: { url: videoUrl, quality: "128" }, // Set quality to 128 by default
       headers: {
         "X-RapidAPI-Key": "7cb05360f8mshca6918f8ea33103p1c4264jsn97b178de78f8",
-        "X-RapidAPI-Host": "youtube-mp36.p.rapidapi.com",
+        "X-RapidAPI-Host":
+          "youtube-mp3-download-highest-quality1.p.rapidapi.com",
       },
     };
 
@@ -48,55 +39,56 @@ const YoutubeVideo = () => {
   };
 
   const handleDownload = () => {
-    if (videoData && videoData.link) {
-      const link = document.createElement("a");
-      link.href = videoData.link;
-      link.download = "downloadedFile.mp3";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (videoData && videoData.links && videoData.links.length > 0) {
+      const highestQualityLink = videoData.links[0].url; // Assuming the array is sorted by quality
+
+      // Open the link in a new tab/window
+      window.open(highestQualityLink, "_blank");
     }
   };
 
   return (
-    <body>
-      <div className="login-container">
-        <form className="login-form">
-          <h1>YouTube Video Downloader</h1>
-          <label>
-            Video URL:
-            <input
-              type="text"
-              value={videoId}
-              onChange={handleInputChange}
-              className="input-field"
-              placeholder="Enter YouTube Video URL"
-            />
-          </label>
-          <button onClick={handleFetchData} className="submit-button">
-            Generate
-          </button>
+    <div className="login-container">
+      <form className="login-form">
+        <h1>YouTube Video Downloader</h1>
+        <label>
+          Video URL:
+          <input
+            type="text"
+            value={videoUrl}
+            onChange={handleInputChange}
+            className="input-field"
+            placeholder="Enter YouTube Video URL"
+          />
+        </label>
+        <button onClick={handleFetchData} className="submit-button">
+          Generate
+        </button>
 
-          {error && <p className="error-message">{error}</p>}
+        {error && <p className="error-message">{error}</p>}
 
-          {videoData && (
-            <div className="result-container">
-              <h2>Result</h2>
-              <p>Link: {videoData.link}</p>
-              <p>Title: {videoData.title}</p>
-              <p>Filesize: {videoData.filesize}</p>
-              <p>Progress: {videoData.progress}</p>
-              <p>Duration: {videoData.duration}</p>
-              <p>Status: {videoData.status}</p>
-              <p>Message: {videoData.msg}</p>
-              <button onClick={handleDownload} className="download-button">
+        {videoData && (
+          <div className="result-container">
+            <h2>Result</h2>
+            <p>Title: {videoData.title}</p>
+            {/* Display the link as a clickable anchor */}
+            <p>
+              Link:{" "}
+              <a
+                href={videoData.link}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Download
-              </button>
-            </div>
-          )}
-        </form>
-      </div>
-    </body>
+              </a>
+            </p>
+            <p>Length: {videoData.length}</p>
+            <p>Size: {videoData.size}</p>
+            {/* Remove the separate "Download" button */}
+          </div>
+        )}
+      </form>
+    </div>
   );
 };
 
