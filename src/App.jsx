@@ -1,3 +1,4 @@
+// YoutubeVideo.js
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -5,16 +6,22 @@ const YoutubeVideo = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoData, setVideoData] = useState(null);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false); // New state for loading
+  const [loading, setLoading] = useState(false);
+  const [clearInput, setClearInput] = useState(false);
 
   const handleInputChange = (e) => {
     setVideoUrl(e.target.value);
+    setClearInput(false);
+  };
+
+  const handleClearInput = () => {
+    setVideoUrl("");
+    setClearInput(true);
   };
 
   const handleFetchData = async (e) => {
     e.preventDefault();
-
-    setLoading(true); // Set loading to true when starting the request
+    setLoading(true);
 
     const apiEndpoint =
       "https://youtube-mp3-download-highest-quality1.p.rapidapi.com/ytmp3/ytmp3/custom/";
@@ -39,7 +46,7 @@ const YoutubeVideo = () => {
       setError("Error fetching video data");
       setVideoData(null);
     } finally {
-      setLoading(false); // Set loading to false when the request is completed (success or error)
+      setLoading(false);
     }
   };
 
@@ -56,13 +63,24 @@ const YoutubeVideo = () => {
         <h1>YouTube Video Downloader</h1>
         <label>
           Video URL:
-          <input
-            type="text"
-            value={videoUrl}
-            onChange={handleInputChange}
-            className="input-field"
-            placeholder="Enter YouTube Video URL"
-          />
+          <div className="input-container">
+            <input
+              type="text"
+              value={videoUrl}
+              onChange={handleInputChange}
+              className={`input-field ${clearInput ? "cleared" : ""}`}
+              placeholder="Enter YouTube Video URL"
+            />
+            {videoUrl && (
+              <button
+                type="button"
+                className="clear-button"
+                onClick={handleClearInput}
+              >
+                X
+              </button>
+            )}
+          </div>
         </label>
         <button onClick={handleFetchData} className="submit-button">
           Generate
@@ -75,21 +93,30 @@ const YoutubeVideo = () => {
         {videoData && (
           <div className="result-container">
             <h2>Hasil</h2>
-            <p>Title: {videoData.title}</p>
+            <h4>Judul: {videoData.title}</h4>
             <p>
               <a
                 href={videoData.link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="download-button"
+                onClick={handleDownload}
               >
                 Download
               </a>
             </p>
-            <p>Length: {videoData.length}</p>
             <p>Size: {videoData.size}</p>
           </div>
         )}
+        <h4>Support Me: </h4>
+        <div className="social-icons">
+          <a href="https://www.instagram.com/ahmdafriz4/">
+            <img src="instagram.png" alt="Instagram" />
+          </a>
+          <a href="https://www.linkedin.com/in/ahmad-afriza-ez4-ab9173276/">
+            <img src="linkedin.png" alt="LinkedIn" />
+          </a>
+        </div>
       </form>
     </div>
   );
